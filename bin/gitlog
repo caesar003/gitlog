@@ -1,0 +1,129 @@
+#!/bin/bash
+
+VERSION="1.0.1"
+CONFIG_DIR="$HOME/.config/gitlog"
+CONFIG_FILE="$CONFIG_DIR/setting.conf"
+OUTPUT_BASE_DIR="$HOME/.logs/gitlog"
+
+print_help() {
+	echo "Usage: gitlog.sh [options]"
+	echo "Options:"
+	echo "  -h, --help           Show this help message and exit"
+	echo "  -v, --version        Show version number"
+	echo "  -g, --generate       Generate log files"
+	echo "    -a, --author       Specify the author (optional, overrides config)"
+	echo "    -s, --since        Specify the date since when to generate logs (optional, overrides config)"
+	echo "    -n, --name         Specify the repository name to use"
+}
+
+print_version() {
+	echo "gitlog.sh version $VERSION"
+}
+
+# Load config file if it exists
+load_config() {
+	if [[ -f "$CONFIG_FILE" ]]; then
+		source "$CONFIG_FILE"
+	else
+		echo "Config file not found: $CONFIG_FILE" >&2
+		exit 1
+	fi
+}
+
+# Parse repositories from config
+load_repositories() {
+	local repo_file="$CONFIG_DIR/repositories/$1.json"
+	if [[ -f "$repo_file" ]]; then
+		REPO_PATHS=($(jq -r '.[]' "$repo_file")) # Requires jq to parse JSON
+	else
+		echo "Repository config not found: $repo_file" >&2
+		exit 1
+	fi
+}
+
+# Generate log
+generate_log() {
+	local output_dir="$OUTPUT_BASE_DIR/$AUTHOR/$SINCE/$REPO_NAME"
+	mkdir -p "$output_dir"
+
+	for repo_path in "${REPO_PATHS[@]}"; do
+		if [[ -d "$repo_path" ]]; then
+			echo "Generating log for repository: $repo_path"
+			(
+				cd "$repo_path" || exit
+				git log --author="$AUTHOR" --since="$SINCE" >"$output_dir/$(basename "$repo_path").txt"
+			)
+		else
+			echo "Repository path not found: $repo_path" >&2
+		fi
+	done
+	echo "Logs generated in $output_dir"
+}
+
+# Main script
+AUTHOR=""
+SINCE=""
+REPO_NAME=""
+REPO_PATHS=()
+FLAGS_PROVIDED=false
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+	-h | --help)
+		print_help
+		exit 0
+		;;
+	-v | --version)
+		print_version
+		exit 0
+		;;
+	-g | --generate)
+		FLAGS_PROVIDED=true
+		;;
+	-a | --author)
+		AUTHOR="$2"
+		shift 2
+		;;
+	-s | --since)
+		SINCE="$2"
+		shift 2
+		;;
+	-n | --name)
+		REPO_NAME="$2"
+		shift 2
+		;;
+	*)
+		echo "Unknown option: $1" >&2
+		print_help
+		exit 1
+		;;
+	esac
+	shift
+done
+
+# If no flags are provided, print usage information
+if [[ "$FLAGS_PROVIDED" == false ]]; then
+	echo "No options provided. Use --help for usage information."
+	exit 1
+fi
+
+# Check if required config exists or load defaults
+if [[ -z "$AUTHOR" || -z "$SINCE" || -z "$REPO_NAME" ]]; then
+	echo "Loading default configuration..."
+	load_config
+	AUTHOR=${AUTHOR:-$author}
+	SINCE=${SINCE:-$since}
+	REPO_NAME=${REPO_NAME:-$repository}
+fi
+
+# Validate REPO_NAME and load repositories
+if [[ -z "$REPO_NAME" ]]; then
+	echo "Error: Repository name is required." >&2
+	exit 1
+fi
+load_repositories "$REPO_NAME"
+
+# Generate logs if `--generate` was specified
+if [[ "$FLAGS_PROVIDED" == true ]]; then
+	generate_log
+fi

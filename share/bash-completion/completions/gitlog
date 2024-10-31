@@ -1,0 +1,36 @@
+_gitlog_complete() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    # Define the available options
+    opts="-h --help -v --version -g --generate -a --author -s --since -n --name"
+
+    case "$prev" in
+        -a|--author)
+            # Suggest authors if available (e.g., "superadmin")
+            COMPREPLY=( $(compgen -W "superadmin anotheruser" -- "$cur") )
+            return 0
+            ;;
+        -s|--since)
+            # Suggest sample dates for `--since`
+            COMPREPLY=( $(compgen -W "$(date +%Y-%m-%d) 2022-01-01 2023-01-01" -- "$cur") )
+            return 0
+            ;;
+        -n|--name)
+            # Suggest available repository names by reading json filenames in repositories directory
+            local repo_names
+            repo_names=$(find ~/.config/gitlog/repositories -type f -name "*.json" | xargs -n 1 basename | sed 's/.json//')
+            COMPREPLY=( $(compgen -W "$repo_names" -- "$cur") )
+            return 0
+            ;;
+        *)
+            # Default options for the main command
+            COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+            ;;
+    esac
+}
+
+# Register the completion function for gitlog.sh
+complete -F _gitlog_complete gitlog

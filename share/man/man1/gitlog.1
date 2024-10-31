@@ -1,0 +1,92 @@
+.TH GITLOG.SH 1 "October 31, 2024" "Version 1.0.0" "Git Log Report Generator"
+.SH NAME
+gitlog.sh \- Generate Git log reports for multiple repositories
+
+.SH SYNOPSIS
+.B gitlog.sh
+[\fB-h\fR | \fB--help\fR]
+[\fB-v\fR | \fB--version\fR]
+[\fB-g\fR | \fB--generate\fR]
+[\fB-a\fR | \fB--author\fR \fIauthor_name\fR]
+[\fB-s\fR | \fB--since\fR \fIdate\fR]
+[\fB-n\fR | \fB--name\fR \fIrepository_name\fR]
+
+.SH DESCRIPTION
+\fBgitlog.sh\fR is a script that helps generate Git logs for multiple repositories with ease.
+This tool automates the collection of Git log information for a specific author over a defined time period.
+
+.SH OPTIONS
+.TP
+\fB-h\fR, \fB--help\fR
+Displays a help message with a list of all available options and exits.
+
+.TP
+\fB-v\fR, \fB--version\fR
+Displays the version number of \fBgitlog.sh\fR and exits.
+
+.TP
+\fB-g\fR, \fB--generate\fR
+Initiates the log generation process based on the specified or configured parameters.
+
+.TP
+\fB-a\fR \fIauthor_name\fR, \fB--author\fR \fIauthor_name\fR
+Specifies the author name to filter Git logs. Overrides the author configured in the settings file.
+
+.TP
+\fB-s\fR \fIdate\fR, \fB--since\fR \fIdate\fR
+Specifies the starting date for filtering Git logs. This should be in the format \fIYYYY-MM-DD\fR. Overrides the configured date in the settings file.
+
+.TP
+\fB-n\fR \fIrepository_name\fR, \fB--name\fR \fIrepository_name\fR
+Specifies the repository name to target for the Git logs. Matches with the JSON configuration files in \fB~/.config/gitlog/repositories/\fR.
+
+.SH CONFIGURATION
+The script uses a configuration file located at \fB~/.config/gitlog/setting.conf\fR with default parameters:
+.RS
+.PD 0
+.IP * 2
+repository: Default repository name
+.IP * 2
+author: Default author name
+.IP * 2
+since: Default date in the format YYYY-MM-DD
+.PD
+.RE
+
+.SH REPOSITORIES CONFIGURATION
+Each repository list should be in a JSON file located at \fB~/.config/gitlog/repositories/\fR, named according to the repository name.
+Each file should contain paths to the repositories in an array format. Example for \fBsample.json\fR:
+.EX
+[
+    "path/to/first/repo",
+    "path/to/second/repo"
+]
+.EE
+
+.SH OUTPUT
+Logs are generated in the directory:
+\fB~/.logs/gitlog/<author>/<since-date>/<repository-name>.txt\fR
+
+.SH EXAMPLES
+Generate a log report for a specific author since a given date:
+.EX
+gitlog.sh --generate --author "superadmin" --since "2022-10-01" --name "sample"
+.EE
+
+.SH FILES
+.TP
+\fB~/.config/gitlog/setting.conf\fR
+Default configuration file with repository name, author, and date.
+
+.TP
+\fB~/.config/gitlog/repositories/*.json\fR
+Repository files in JSON format listing the paths to each repository.
+
+.SH SEE ALSO
+.B git-log(1)
+
+.SH AUTHOR
+Written by caesar003
+
+.SH VERSION
+Version 1.0.0
