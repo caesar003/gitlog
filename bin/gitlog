@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.0.1"
+VERSION="1.0.2"
 CONFIG_DIR="$HOME/.config/gitlog"
 CONFIG_FILE="$CONFIG_DIR/setting.conf"
 OUTPUT_BASE_DIR="$HOME/.logs/gitlog"
@@ -79,6 +79,7 @@ while [[ $# -gt 0 ]]; do
 		;;
 	-g | --generate)
 		FLAGS_PROVIDED=true
+		shift
 		;;
 	-a | --author)
 		AUTHOR="$2"
@@ -98,7 +99,6 @@ while [[ $# -gt 0 ]]; do
 		exit 1
 		;;
 	esac
-	shift
 done
 
 # If no flags are provided, print usage information
