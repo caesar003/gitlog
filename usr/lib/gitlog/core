@@ -1,4 +1,4 @@
-source /usr/lib/gitlog/constant 
+source /usr/lib/gitlog/constant
 
 printVersion() {
 	echo "$0 version $VERSION"
@@ -12,25 +12,30 @@ printHelp() {
 	echo "  -g, --generate       Generate log files"
 	echo "    -a, --author       Specify the author (optional, overrides config)"
 	echo "    -s, --since        Specify the date since when to generate logs (optional, overrides config)"
-	echo "    -n, --name         Specify the repository name to use"
+	echo "    -l, --list         Specify the repository list to read from"
 }
 
 loadConfig() {
-	echo "Loading configuration file..."
+	echo "Loading configuration file..." >&2
+	local author=""
+	local since=""
+	local repo_list=""
+
 	if [[ -f "$CONFIG_FILE" ]]; then
-		# shellcheck source=/home/caesar/.config/gitlog/setting.conf
 		source "$CONFIG_FILE"
 	else
-		echo "Config file not found: $CONFIG_FILE" >&2
+		echo "ERROR: Config file not found: $CONFIG_FILE" >&2
 		exit 1
 	fi
+
+	echo "$author $since $repo_list"
 }
 
 loadRepositories() {
 	local repo_file="$CONFIG_DIR/repositories/$1.json"
 	echo "Loading repositories from $repo_file..."
 	if [[ -f "$repo_file" ]]; then
-		REPO_PATHS=($(jq -r '.[]' "$repo_file"))
+		jq -r '.[]' "$repo_file" 
 	else
 		echo "Repository config not found: $repo_file" >&2
 		exit 1
@@ -38,23 +43,13 @@ loadRepositories() {
 }
 
 generateLog() {
-	loadConfig
-	local author="$author"
-	local since_date="$since"
-	local repo_name="$repository"
+	read -r author since repo_list <<<"$(loadConfig)"
 
-	# Parse arguments passed to generateReport
-	while getopts ":a:s:n:" flag; do
+	while getopts ":a:s:l:" flag; do
 		case "$flag" in
-		a)
-			author="$OPTARG"
-			;;
-		s)
-			since_date="$OPTARG"
-			;;
-		n)
-			repo_name="$OPTARG"
-			;;
+		a) author="$OPTARG" ;;
+		s) since="$OPTARG" ;;
+		l) repo_list="$OPTARG" ;;
 		*)
 			echo "Invalid option: -$OPTARG" >&2
 			printHelp
@@ -63,16 +58,17 @@ generateLog() {
 		esac
 	done
 
-	outdir="$OUTPUT_BASE_DIR/$author/$since_date/"
+	outdir="$OUTPUT_BASE_DIR/$author/$since/"
 	mkdir -p "$outdir"
 
-	loadRepositories "$repo_name"
-	echo "Generating report for $author starting from $since_date"
+	mapfile -t repo_paths < <(loadRepositories "$repo_list")
+
+	echo "Generating report for $author starting from $since"
 	echo "Log files will be saved in $outdir"
 
-	for repo in "${REPO_PATHS[@]}"; do
+	for repo in "${repo_paths[@]}"; do
 		repo_name=$(basename "$repo")
-		git -C "$repo" log --since="$since_date" --author="$author" >"$outdir/$repo_name.txt"
+		git -C "$repo" log --since="$since" --author="$author" >"$outdir/$repo_name.txt"
 		echo "Log for $repo_name saved to $outdir/$repo_name.txt"
 	done
 }
