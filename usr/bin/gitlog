@@ -1,0 +1,33 @@
+#!/bin/bash
+
+source /usr/lib/gitlog/core
+
+# Parse top-level arguments
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+	-h | --help)
+		printHelp
+		exit 0
+		;;
+	-v | --version)
+		printVersion
+		exit 0
+		;;
+	-g | --generate)
+		shift
+		generateLog "$@"
+		exit 0
+		;;
+	*)
+		echo "Unknown option: $1" >&2
+		printHelp
+		exit 1
+		;;
+	esac
+done
+
+# If no options are provided
+if [[ $# -eq 0 ]]; then
+	echo "No options provided. Use -h for help."
+	exit 1
+fi

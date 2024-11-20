@@ -1,0 +1,78 @@
+source /usr/lib/gitlog/constant 
+
+printVersion() {
+	echo "$0 version $VERSION"
+}
+
+printHelp() {
+	echo "Usage: gitlog.sh [options]"
+	echo "Options:"
+	echo "  -h, --help           Show this help message and exit"
+	echo "  -v, --version        Show version number"
+	echo "  -g, --generate       Generate log files"
+	echo "    -a, --author       Specify the author (optional, overrides config)"
+	echo "    -s, --since        Specify the date since when to generate logs (optional, overrides config)"
+	echo "    -n, --name         Specify the repository name to use"
+}
+
+loadConfig() {
+	echo "Loading configuration file..."
+	if [[ -f "$CONFIG_FILE" ]]; then
+		# shellcheck source=/home/caesar/.config/gitlog/setting.conf
+		source "$CONFIG_FILE"
+	else
+		echo "Config file not found: $CONFIG_FILE" >&2
+		exit 1
+	fi
+}
+
+loadRepositories() {
+	local repo_file="$CONFIG_DIR/repositories/$1.json"
+	echo "Loading repositories from $repo_file..."
+	if [[ -f "$repo_file" ]]; then
+		REPO_PATHS=($(jq -r '.[]' "$repo_file"))
+	else
+		echo "Repository config not found: $repo_file" >&2
+		exit 1
+	fi
+}
+
+generateLog() {
+	loadConfig
+	local author="$author"
+	local since_date="$since"
+	local repo_name="$repository"
+
+	# Parse arguments passed to generateReport
+	while getopts ":a:s:n:" flag; do
+		case "$flag" in
+		a)
+			author="$OPTARG"
+			;;
+		s)
+			since_date="$OPTARG"
+			;;
+		n)
+			repo_name="$OPTARG"
+			;;
+		*)
+			echo "Invalid option: -$OPTARG" >&2
+			printHelp
+			exit 1
+			;;
+		esac
+	done
+
+	outdir="$OUTPUT_BASE_DIR/$author/$since_date/"
+	mkdir -p "$outdir"
+
+	loadRepositories "$repo_name"
+	echo "Generating report for $author starting from $since_date"
+	echo "Log files will be saved in $outdir"
+
+	for repo in "${REPO_PATHS[@]}"; do
+		repo_name=$(basename "$repo")
+		git -C "$repo" log --since="$since_date" --author="$author" >"$outdir/$repo_name.txt"
+		echo "Log for $repo_name saved to $outdir/$repo_name.txt"
+	done
+}
