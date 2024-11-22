@@ -16,7 +16,6 @@ printHelp() {
 }
 
 loadConfig() {
-	echo "Loading configuration file..." >&2
 	local author=""
 	local since=""
 	local repo_list=""
@@ -33,7 +32,6 @@ loadConfig() {
 
 loadRepositories() {
 	local repo_file="$CONFIG_DIR/repositories/$1.json"
-	echo "Loading repositories from $repo_file..."
 	if [[ -f "$repo_file" ]]; then
 		jq -r '.[]' "$repo_file" 
 	else
@@ -58,7 +56,7 @@ generateLog() {
 		esac
 	done
 
-	outdir="$OUTPUT_BASE_DIR/$author/$since/"
+	outdir="$OUTPUT_BASE_DIR/$author/$since"
 	mkdir -p "$outdir"
 
 	mapfile -t repo_paths < <(loadRepositories "$repo_list")
