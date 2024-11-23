@@ -1,3 +1,4 @@
+#!/bin/bash
 readonly VERSION="2.0.0"
 readonly CONFIG_DIR="$HOME/.config/gitlog"
 readonly CONFIG_FILE="$CONFIG_DIR/setting.conf"
