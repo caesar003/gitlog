@@ -8,13 +8,14 @@ from pathlib import Path
 import platform
 
 # Constants
-VERSION = "1.0.5"
+VERSION = "2.0.0"
 CONFIG_DIR = str(Path.home() / ".config/gitlog")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "setting.conf")
 OUTPUT_BASE_DIR = str(Path.home() / ".logs/gitlog")
 
 if platform.system() == "Windows":
     CONFIG_DIR = str(Path.home() / "AppData/Roaming/gitlog")
+    CONFIG_FILE = str(Path.home() / "AppData/Roaming/gitlog/setting.conf")
     OUTPUT_BASE_DIR = str(Path.home() / "AppData/Local/gitlog")
 
 def print_version():
@@ -41,6 +42,7 @@ def check_git_installed():
         exit(1)
 
 def load_config():
+    """Load configuration from the config file."""
     if not os.path.exists(CONFIG_FILE):
         print(f"ERROR: Config file not found: {CONFIG_FILE}")
         exit(1)
@@ -49,7 +51,11 @@ def load_config():
         for line in f:
             key, _, value = line.partition("=")
             config[key.strip()] = value.strip()
-    return config.get("author", ""), config.get("since", ""), config.get("repo_list", "")
+    return {
+        "author": config.get("author", ""),
+        "since": config.get("since", ""),
+        "repo_list": config.get("repo_list", ""),
+    }
 
 def load_repositories(repo_list):
     repo_file = os.path.join(CONFIG_DIR, "repositories", f"{repo_list}.json")
@@ -59,10 +65,23 @@ def load_repositories(repo_list):
     with open(repo_file, "r") as f:
         return json.load(f)
 
-def generate_log(author, since, repo_list):
-    if not author or not since or not repo_list:
-        author, since, repo_list = load_config()
+
+def generate_log(author=None, since=None, repo_list=None):
+    """Generate git logs based on the provided or default configuration."""
+    # Load default configuration
+    config = load_config()
     
+    # Use defaults only for missing arguments
+    author = author or config["author"]
+    since = since or config["since"]
+    repo_list = repo_list or config["repo_list"]
+
+    # Validate required parameters
+    if not author or not since or not repo_list:
+        print("ERROR: Missing required parameters (author, since, or repo_list).")
+        exit(1)
+
+    # Set output directory and load repositories
     output_dir = os.path.join(OUTPUT_BASE_DIR, author, since)
     os.makedirs(output_dir, exist_ok=True)
     repo_paths = load_repositories(repo_list)
@@ -70,6 +89,7 @@ def generate_log(author, since, repo_list):
     print(f"Generating report for {author} starting from {since}")
     print(f"Log files will be saved in {output_dir}")
     
+    # Generate logs for each repository
     for repo in repo_paths:
         repo_name = os.path.basename(repo)
         output_file = os.path.join(output_dir, f"{repo_name}.txt")

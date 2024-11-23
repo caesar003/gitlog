@@ -15,6 +15,7 @@
 -   [Configuration](#configuration)
 -   [Usage](#usage)
 -   [Examples](#examples)
+-   [Windows](#windows)
 -   [License](#license)
 
 ## Installation
@@ -113,6 +114,47 @@ gitlog --help
 -   `share/` : Man page and completion script.
     -   `bash-completion/` : Bash completion script for `gitlog`.
     -   `man/` : Man page file for `gitlog`.
+
+## Windows
+
+### Requirements
+
+-   python3
+-   git
+
+### Steps
+
+Clone the repository
+
+```bash
+git clone https://github.com/caesar003/gitlog.git
+```
+
+copy configuration file into `C:\Users\<user>\AppData\Roaming\gitlog\setting.conf` with the following format
+
+```conf
+repo_list=<json-file-list-repo>
+author=<your-name>
+since=<since-date>
+```
+
+write repository list in `JSON` array in `C:\Users\<user>\AppData\Roaming\gitlog\repositories\*.json`, you can put as many files as you need here, the list goes like this:
+
+```json
+[
+    "C:/Users/caesar/projects/e-commerce",
+    "C:/Users/caesar/projects/student-management-system"
+]
+```
+
+How to:
+
+Open Windows Powershell or command prompt  navigate to where you clone gitlog, then descend to `usr/bin` and run the following command,
+
+```ps
+python gitlog.py
+```
+
 
 ## License
 

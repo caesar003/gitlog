@@ -1,4 +1,4 @@
-readonly VERSION="1.0.5"
+readonly VERSION="2.0.0"
 readonly CONFIG_DIR="$HOME/.config/gitlog"
 readonly CONFIG_FILE="$CONFIG_DIR/setting.conf"
 readonly OUTPUT_BASE_DIR="$HOME/.logs/gitlog"
