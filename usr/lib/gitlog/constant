@@ -1,5 +1,5 @@
 #!/bin/bash
-readonly VERSION="2.0.0"
+readonly VERSION="2.0.1"
 readonly CONFIG_DIR="$HOME/.config/gitlog"
 readonly CONFIG_FILE="$CONFIG_DIR/setting.conf"
 readonly OUTPUT_BASE_DIR="$HOME/.logs/gitlog"
