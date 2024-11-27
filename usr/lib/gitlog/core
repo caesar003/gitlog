@@ -35,7 +35,7 @@ loadConfig() {
 loadRepositories() {
 	local repo_file="$CONFIG_DIR/repositories/$1.json"
 	if [[ -f "$repo_file" ]]; then
-		jq -r '.[]' "$repo_file" 
+		jq -r '.[]' "$repo_file"
 	else
 		echo "Repository config not found: $repo_file" >&2
 		exit 1
@@ -58,10 +58,21 @@ generateLog() {
 		esac
 	done
 
+	if [[ -z "$author" || -z "$since" || -z "$repo_list" ]]; then
+		echo "ERROR: Missing required input."
+		echo "Ensure 'author', 'since', and 'repo_list' are specified either in the config file or as command-line arguments." >&2
+		exit 1
+	fi
+
 	outdir="$OUTPUT_BASE_DIR/$author/$since"
 	mkdir -p "$outdir"
 
 	mapfile -t repo_paths < <(loadRepositories "$repo_list")
+
+	if [[ ${#repo_paths[@]} -eq 0 ]]; then
+		echo "ERROR: No repositories found in the list: $repo_list" >&2
+		exit 1
+	fi
 
 	echo "Generating report for $author starting from $since"
 	echo "Log files will be saved in $outdir"
