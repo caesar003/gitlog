@@ -1,0 +1,11 @@
+Package: gitlog
+Version: 0.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: git
+Maintainer: caesar003 <https://github.com/caesar003>
+Description: A command-line tool to generate Git log reports across multiple repositories
+ A convenient utility to filter Git logs by author and date, and to output organized
+ logs from multiple repositories. It includes bash completion and a man page for ease of use.
+

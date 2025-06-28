@@ -18,9 +18,9 @@ printHelp() {
 }
 
 loadConfig() {
-	local author=""
-	local since=""
-	local repo_list=""
+	author=""
+	since=""
+	repo_list=""
 
 	if [[ -f "$CONFIG_FILE" ]]; then
 		source "$CONFIG_FILE"
@@ -29,7 +29,10 @@ loadConfig() {
 		exit 1
 	fi
 
-	echo "$author $since $repo_list"
+	# Export the variables so they can be accessed by the calling function
+	export CONFIG_AUTHOR="$author"
+	export CONFIG_SINCE="$since"
+	export CONFIG_REPO_LIST="$repo_list"
 }
 
 loadRepositories() {
@@ -43,8 +46,14 @@ loadRepositories() {
 }
 
 generateLog() {
-	read -r author since repo_list <<<"$(loadConfig)"
+	loadConfig
+	
+	# Set variables from config
+	author="$CONFIG_AUTHOR"
+	since="$CONFIG_SINCE"
+	repo_list="$CONFIG_REPO_LIST"
 
+	# Parse command line arguments to override config
 	while getopts ":a:s:l:" flag; do
 		case "$flag" in
 		a) author="$OPTARG" ;;
@@ -63,6 +72,7 @@ generateLog() {
 		echo "Ensure 'author', 'since', and 'repo_list' are specified either in the config file or as command-line arguments." >&2
 		exit 1
 	fi
+
 
 	outdir="$OUTPUT_BASE_DIR/$author/$since"
 	mkdir -p "$outdir"

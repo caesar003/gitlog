@@ -1,4 +1,4 @@
-.TH GITLOG.SH 1 "June 2025" "Version 2.0.2" "Git Log Report Generator"
+.TH GITLOG.SH 1 "June 2025" "Version 0.0.0" "Git Log Report Generator"
 .SH NAME
 gitlog.sh \- Generate Git log reports for multiple repositories
 
