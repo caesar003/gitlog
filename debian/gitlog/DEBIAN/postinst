@@ -1,0 +1,9 @@
+#!/bin/bash
+# post-installation script
+
+# Make configuration directory
+mkdir -p "$HOME/.config/gitlog/repositories"
+
+# Copy default config files
+# cp -r config/* "$HOME/.config/gitlog/"
+# mandb  # update man database

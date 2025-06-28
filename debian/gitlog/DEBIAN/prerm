@@ -1,0 +1,5 @@
+#!/bin/bash
+# pre-remove script
+
+# Optionally remove config directory
+# rm -rf "$HOME/.config/gitlog"

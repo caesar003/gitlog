@@ -1,2 +1,8 @@
-debian
+debian/gitlog/DEBIAN/control
+debian/*.deb
+debian/gitlog/usr
 template
+usr/share/man/man1/gitlog.1
+usr/lib/gitlog/constant
+*.deb
+
